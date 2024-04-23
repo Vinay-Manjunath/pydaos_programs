@@ -77,7 +77,7 @@ def upload_file():
 # Function to delete a key
 def delete_key():
     key = input("Enter key to delete: ")
-    if daos_dict.pop(key):
+    if not daos_dict.pop(key):
         print("Key deleted successfully.")
     else:
         print("Key not found.")
