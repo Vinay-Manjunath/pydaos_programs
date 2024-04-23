@@ -63,10 +63,15 @@ def save_value_as_file(key, value):
         f.write(value)
     print(f"Value saved as file: {filename}")
 
-# Function to print all keys
+#Function to print all keys
 def print_keys():
-    for i in daos_dict:
-        print(i)
+    unique_keys = set()
+    for key in daos_dict:
+        key_prefix = key.split("chunk")[0]
+        unique_keys.add(key_prefix)
+    for key in unique_keys:
+        print(key)
+
 
 # Function to upload file for a new key with time measurement
 def upload_file():
