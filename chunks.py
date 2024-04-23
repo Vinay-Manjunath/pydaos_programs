@@ -4,8 +4,20 @@ from pydaos import DCont, DDict
 import pool_test
 
 # Create a DAOS container
-pool,containers = pool_test.list_containers_in_pool_with_max_targets()
-daos_cont = DCont(pool,containers[0], None)
+def get_daos_container():
+    pool, containers = pool_test.list_containers_in_pool_with_max_targets()
+    for container in containers:
+        try:
+            return DCont(pool, container, None)
+        except Exception as e:
+            print(f"Error accessing container {container}: {e}")
+            continue
+    
+
+# Create a DAOS container
+daos_cont = get_daos_container()
+
+#daos_cont = DCont(pool,containers[0], None)
 
 # Create a DAOS dictionary or get it if it already exists
 try:
