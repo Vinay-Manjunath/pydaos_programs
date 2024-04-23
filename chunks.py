@@ -26,39 +26,36 @@ def print_help():
     print("u\t- Upload file for a new key")
     print("p\t- Display keys")
     print("q\t- Quit")
+# Function to read a key with time measurement
 def read_key():
-  try:
-    key = input("Enter key to read: ")
-    chunk_count = 0
-    assembled_data = b""
+    try:
+        key = input("Enter key to read: ")
+        chunk_count = 0
+        assembled_data = b""
+        
+        start_time = time.time()
+        # Fetch all chunks using bget
+        chunk_keys = {f"{key}chunk{i}": None for i in range(len(daos_dict))}
 
-    start_time = time.time()
+        chunks = daos_dict.bget(chunk_keys)
+        
+        for chunk_key, chunk in chunks.items():
+            if chunk is not None:
+                assembled_data += chunk
+                chunk_count += 1
+        
+        end_time = time.time()
+        retrieval_time = end_time - start_time
 
-    # Construct an initial list of potential chunk keys (adjustable based on knowledge)
-    chunk_keys = []
-    for i in range(chunk_count):
-      chunk_keys.append(f"{key}chunk{i}")
+        if assembled_data:
+            save_value_as_file(key, assembled_data)
+            print(f"Value retrieved successfully. Total chunks: {chunk_count}. Time taken: {retrieval_time} seconds")
+        else:
+            print("Key not found.")
 
-    # Retrieve chunks in bulk using bget
-    chunk_data = daos_dict.bget(chunk_keys)
+    except Exception as e:
+        print(f"Error reading key: {e}")
 
-    # Check if the retrieved data is a list and convert it to a dictionary if needed
-    if isinstance(chunk_data, list):
-      chunk_data_dict = {}
-      for i in range(len(chunk_keys)):
-        chunk_data_dict[chunk_keys[i]] = chunk_data[i]
-    else:
-      chunk_data_dict = chunk_data
-
-    for chunk_key, chunk_data in chunk_data_dict.items():
-      assembled_data += chunk_data
-
-    # Rest of the code for checking retrieved chunks and processing data...
-
-  except KeyError:
-    print("\tError! Key not found")
-  except Exception as e:
-    print(f"An error occurred during read: {e}")
 
 def save_value_as_file(key, value):
     filename = os.path.join(upload_dir, f"{key}.dat")
@@ -68,13 +65,8 @@ def save_value_as_file(key, value):
 
 # Function to print all keys
 def print_keys():
-    unique_keys = set()
-    for key in daos_dict:
-        key_prefix = key.split("chunk")[0]
-        unique_keys.add(key_prefix)
-    for key in unique_keys:
-        print(key)
-
+    for i in daos_dict:
+        print(i)
 
 # Function to upload file for a new key with time measurement
 def upload_file():
@@ -84,7 +76,7 @@ def upload_file():
     if os.path.exists(file_path):
         chunk_dict = {}
         try:
-            start_time = time.time()
+            
             with open(file_path, "rb") as f:
                 chunk_count = 0
                 while True:
